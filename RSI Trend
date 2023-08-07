@@ -1,0 +1,36 @@
+//@version=5
+indicator("RSI Trend", overlay = true)
+
+src=input(close)
+
+rsi_period=input(14,"RSI PERIOD")
+atr_mult=input(1.,"ATR Multiplier")
+atr_length=input(14,"ATR LENGTH")
+ATR= ta.hma(ta.tr,atr_length)
+
+hull_20 = ta.hma(close, 20)
+
+rsi_trend(atr_mult) =>
+    up_trend=low-ATR*atr_mult
+    down_trend=high+ATR*atr_mult
+
+
+    RSI_Trend=0.0
+    RSI_Trend := ta.rsi(src,rsi_period)>=50 ? (up_trend<nz(RSI_Trend[1]) ? nz(RSI_Trend[1]) : up_trend) : (down_trend>nz(RSI_Trend[1]) ? nz(RSI_Trend[1]) : down_trend)
+    
+    RSI_Trend
+
+
+t1 = (rsi_trend(1) + hull_20)/2
+t2 = (rsi_trend(1.382) + hull_20)/2
+
+rsi_trend_color = close>t1 and close>t2 ? color.lime : close<t1 and close<t2 ? color.red : color.gray
+
+
+p1 = plot(t1, color=rsi_trend_color, linewidth=3)
+p2 = plot(t2, color=rsi_trend_color, linewidth=3)
+
+fill(p1, p2, color=color.new(rsi_trend_color, 80))
+
+
+plotshape(true, color=color.new(rsi_trend_color, 70), style=shape.square, location=location.bottom)
